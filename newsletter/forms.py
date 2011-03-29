@@ -39,18 +39,32 @@ class SubscribeRequestForm(NewsletterForm):
         being sent with a link where one can edit, confirm and activate one's subscription. 
     """
         
+    def clean(self):
+        #assert self.user or self.email_field, _('Neither an email nor a username is set. This asks for inconsistency!')
+        #assert (self.user and not self.email_field) or (self.email_field and not self.user), _('If user is set, email must be null and vice versa.')
+        #cleaned_data = self.cleaned_data
+        #user = self.cleaned_data.get('user')
+        #email_field = self.cleaned_data.get('email_field')
+
+        #if self.user is None and self.email_field is None:
+        #    raise ValidationError(_("E
+        
+        return super(SubscribeRequestForm, self).clean()
+
     def clean_email_field(self):
         myfield = self.base_fields['email_field']
         value = myfield.widget.value_from_datadict(self.data, self.files, self.add_prefix('email_field'))
 
+        if not value:
+            raise ValidationError(_("An e-mail address is required."))
+
         # Check whether we should be subscribed to as a user
         try:
-            user = User.objects.get(email__exact=value)
-            
-            raise ValidationError(_("This e-mail address belongs to the user '%(username)s'. \
-                                     Please log in as that user and try again.") 
-                                     % {'username': user.username})
-        
+            user = User.objects.filter(email__exact=value)
+            if user.exists():
+                raise ValidationError(_("This e-mail address already belongs to a user. \
+                                         Please log in as that user and try again."))
+
         except User.DoesNotExist:
             pass
 
@@ -116,6 +130,10 @@ class UpdateForm(NewsletterForm):
     """ This form allows one to actually update to or unsubscribe from the newsletter. To do this, a 
         correct activation code is required. 
     """
+    class Meta:
+        model = Subscription
+        fields = ('name_field',)
+
     def clean_user_activation_code(self):
         myfield = self.base_fields['user_activation_code']
         value = myfield.widget.value_from_datadict(self.data, self.files, self.add_prefix('user_activation_code'))

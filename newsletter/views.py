@@ -218,6 +218,7 @@ def update_subscription(request, newsletter_slug, email, action, activation_code
             subscription.save()
     else:
         form = UpdateForm(newsletter=my_newsletter, instance=my_subscription, initial=my_initial)
+        #import pdb;pdb.set_trace()
         
         # If we are activating and activation code is valid and not already subscribed, activate straight away
         # if action == 'subscribe' and form.is_valid() and not my_subscription.subscribed:
