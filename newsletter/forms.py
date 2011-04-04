@@ -70,8 +70,11 @@ class SubscribeRequestForm(NewsletterForm):
 
         # Check whether we have already been subscribed to
         try:
-            subscription = Subscription.objects.get(email_field__exact=value, newsletter=self.instance.newsletter)
-            if subscription.subscribed:
+            #subscription = Subscription.objects.get(email_field__exact=value, newsletter=self.instance.newsletter)
+            if Subscription.objects.filter(
+                    email_field__exact=value,
+                    newsletter=self.instance.newsletter,
+                    subscribed=True).exists():
                 raise ValidationError(_("Your e-mail address has already been subscribed to."))
                             
         except Subscription.DoesNotExist:
@@ -85,7 +88,7 @@ class UpdateRequestForm(NewsletterForm):
     """
     
     class Meta(NewsletterForm.Meta):
-        fields = ('email_field',)
+        #fields = ('email_field',)
     
     def clean(self):
         if not self.instance.subscribed:
